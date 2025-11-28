@@ -7,6 +7,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <title>Aubrey's Flappy Heart Game</title>
 <style>
+  
+canvas {
+    will-change: transform;
+}
+
 *{
   margin:0;
   padding:0;
@@ -285,6 +290,29 @@ function handleFirstInteraction(){
   }
 }
 
+let lastTime = 0;
+
+function loop(timestamp) {
+    if (!gameRunning) return;
+
+    const delta = (timestamp - lastTime) / 16.67;  // normalize to ~60fps
+    lastTime = timestamp;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Bird physics
+    birdVelocity += gravity * delta;
+    birdY += birdVelocity * delta;
+
+    // Pipe movement
+    pipes.forEach(pipe => {
+        pipe.x -= 3 * delta;
+    });
+
+    requestAnimationFrame(loop);
+}
+
+
 // Touch
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
@@ -302,7 +330,7 @@ canvas.addEventListener('mousedown', e => {
   popSound.play();
   startOrFlap();
 });
-
+  
 // Keyboard
 document.addEventListener('keydown', e => {
   if(e.code === 'Space'){
@@ -864,3 +892,4 @@ drawStartScreen();
 
 </body>
 </html>
+
