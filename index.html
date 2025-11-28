@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Flappy Heart</title>
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+body{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:#ffe6f1;
+  font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height:100vh;
+  overflow:hidden;
+  touch-action:none;
+  position:fixed;
+  width:100%;
+  height:100%;
+}
+
+#gameContainer{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:15px;
+  width:100%;
+  max-width:500px;
+  padding:10px;
+}
+
+#canvasWrapper{
+  position:relative;
+  width:100%;
+  max-width:400px;
+  aspect-ratio:2/3;
+  border:4px solid #ff99cc;
+  border-radius:15px;
+  overflow:hidden;
+  box-shadow:0 10px 25px rgba(255,51,153,0.4);
+}
+
+canvas{
+  display:block;
+  width:100%;
+  height:100%;
+  background:#ffe6f1;
+  cursor:pointer;
+}
+
+#score{
+  font-size:clamp(22px, 5vw, 28px);
+  color:#ff3399;
+  font-weight:bold;
+  text-align:center;
+  text-shadow:2px 2px 4px rgba(255,153,204,0.3);
+}
+
+#instructions{
+  text-align:center;
+  color:#ff3399;
+  font-size:clamp(14px, 3.5vw, 16px);
+  padding:0 20px;
+  opacity:0.85;
+  font-weight:500;
+}
+
+#leaderboardBtn{
+  padding:12px 24px;
+  font-size:clamp(16px, 4vw, 18px);
+  border:none;
+  border-radius:10px;
+  background:#ff99cc;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 4px 12px rgba(255,153,204,0.4);
+  transition:all 0.2s ease;
+  touch-action:manipulation;
+}
+
+#leaderboardBtn:active{
+  transform:scale(0.95);
+}
+
+#leaderboardModal{
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.7);
+  z-index:1000;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+
+#leaderboardContent{
+  background:#ffe6f1;
+  border:4px solid #ff99cc;
+  border-radius:15px;
+  padding:25px;
+  max-width:400px;
+  width:100%;
+  max-height:80vh;
+  overflow-y:auto;
+  box-shadow:0 10px 30px rgba(255,51,153,0.5);
+}
+
+#leaderboardContent h2{
+  color:#ff3399;
+  text-align:center;
+  margin-bottom:20px;
+  font-size:clamp(24px, 6vw, 28px);
+}
+
+.leaderboard-entry{
+  display:flex;
+  justify-content:space-between;
+  padding:12px 15px;
+  margin:8px 0;
+  background:#fff;
+  border-radius:8px;
+  border:2px solid #ff99cc;
+  font-size:clamp(14px, 3.5vw, 16px);
+}
+
+.leaderboard-rank{
+  color:#ff3399;
+  font-weight:bold;
+  min-width:30px;
+}
+
+.leaderboard-name{
+  flex:1;
+  color:#ff3399;
+  margin:0 10px;
+}
+
+.leaderboard-score{
+  color:#ff3399;
+  font-weight:bold;
+}
+
+#closeLeaderboard{
+  margin-top:15px;
+  width:100%;
+  padding:12px;
+  background:#ff3399;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+#nameInputModal{
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.8);
+  z-index:2000;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+
+#nameInputContent{
+  background:#ffe6f1;
+  border:4px solid #ff99cc;
+  border-radius:15px;
+  padding:30px;
+  max-width:350px;
+  width:100%;
+  text-align:center;
+}
+
+#nameInputContent h3{
+  color:#ff3399;
+  margin-bottom:10px;
+  font-size:clamp(20px, 5vw, 24px);
+}
+
+#nameInputContent p{
+  color:#ff3399;
+  margin-bottom:20px;
+  font-size:clamp(16px, 4vw, 18px);
+}
+
+#playerNameInput{
+  width:100%;
+  padding:12px;
+  border:2px solid #ff99cc;
+  border-radius:8px;
+  font-size:16px;
+  margin-bottom:15px;
+  text-align:center;
+  background:#fff;
+  color:#ff3399;
+}
+
+#submitName{
+  width:100%;
+  padding:12px;
+  background:#ff3399;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+@media (max-height:600px){
+  #gameContainer{gap:8px;}
+  #score{font-size:clamp(18px, 4vw, 24px);}
+}
+</style>
+</head>
+
+<body>
+
+<div id="gameContainer">
+  <div id="canvasWrapper">
+    <canvas id="gameCanvas"></canvas>
+  </div>
+  <div id="score">Score: 0 | Best: 0</div>
+  <button id="leaderboardBtn">🏆 Leaderboard</button>
+  <div id="instructions">💗 Tap to start • Tap to fly 💗</div>
+</div>
+
+<div id="leaderboardModal">
+  <div id="leaderboardContent">
+    <h2>🏆 Leaderboard 🏆</h2>
+    <div id="leaderboardList"></div>
+    <button id="closeLeaderboard">Close</button>
+  </div>
+</div>
+
+<div id="nameInputModal">
+  <div id="nameInputContent">
+    <h3>💗 New High Score! 💗</h3>
+    <p>Score: <span id="finalScore">0</span></p>
+    <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="15" autocomplete="off">
+    <button id="submitName">Save Score</button>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// Sound effects
+const popSound = new Audio('/bgmusic/pop.mp3');
+popSound.volume = 0.2;
+
+// Background music
+const bgMusic = new Audio('/bgmusic/bg.mp3');
+bgMusic.volume = 0.1;
+bgMusic.loop = true;
+
+let musicStarted = false;
+
+function handleFirstInteraction(){
+  if(!musicStarted){
+    bgMusic.play().catch(e => console.log("Music blocked:", e));
+    musicStarted = true;
+  }
+}
+
+// Touch
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  handleFirstInteraction();
+  popSound.currentTime = 0;
+  popSound.play();
+  startOrFlap();
+}, {passive:false});
+
+// Mouse
+canvas.addEventListener('mousedown', e => {
+  e.preventDefault();
+  handleFirstInteraction();
+  popSound.currentTime = 0;
+  popSound.play();
+  startOrFlap();
+});
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if(e.code === 'Space'){
+    e.preventDefault();
+    handleFirstInteraction();
+    popSound.currentTime = 0;
+    popSound.play();
+    startOrFlap();
+  }
+});
+
+function endGame(){
+  if(gameOver) return;
+  gameOver = true;
+
+  // Try playing game over sound
+  try {
+    gameOverSound.currentTime = 0;
+    gameOverSound.play().catch(e => {
+      console.log("Game over sound blocked:", e);
+    });
+  } catch(e) {
+    console.log("Game over sound error:", e);
+  }
+
+  if(score > bestScore){
+    bestScore = score;
+    try { localStorage.setItem('flappyHeartBest', bestScore); } catch(e) {}
+  }
+
+  document.getElementById('score').textContent = `Score: ${score} | Best: ${bestScore}`;
+
+  setTimeout(() => {
+    drawBackground();
+    drawPipes();
+    drawBall();
+    drawGameOver();
+    paused = true;
+    saveScore();
+  }, 50);
+}
+
+
+
+// High DPI support
+const DPR = window.devicePixelRatio || 1;
+let canvasWidth = 400;
+let canvasHeight = 600;
+
+function resizeCanvas(){
+  const wrapper = document.getElementById('canvasWrapper');
+  const rect = wrapper.getBoundingClientRect();
+  
+  canvas.width = rect.width * DPR;
+  canvas.height = rect.height * DPR;
+  
+  canvasWidth = canvas.width / DPR;
+  canvasHeight = canvas.height / DPR;
+  
+  ctx.scale(DPR, DPR);
+}
+
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// Game variables
+let ball = {
+  x: 80,
+  y: canvasHeight / 2,
+  w: 40,
+  h: 40,
+  gravity: 0.25,
+  lift: -6.5,
+  vel: 0,
+  color: '#ff3399'
+};
+
+let pipes = [];
+let score = 0;
+let bestScore = 0;
+let leaderboard = [];
+let pendingScore = null;
+let registeredPlayerName = '';
+
+// Load saved data
+try {
+  bestScore = Number(localStorage.getItem('flappyHeartBest')) || 0;
+  leaderboard = JSON.parse(localStorage.getItem('flappyHeartLeaderboard') || '[]');
+  registeredPlayerName = localStorage.getItem('flappyHeartPlayerName') || '';
+  if(!Array.isArray(leaderboard)) leaderboard = [];
+} catch(e) {
+  bestScore = 0;
+  leaderboard = [];
+  registeredPlayerName = '';
+}
+
+document.getElementById('score').textContent = `Score: 0 | Best: ${bestScore}`;
+
+let pipeWidth = 65;
+let pipeGap = 210;
+let speed = 2.2;
+let lastPipeTime = 0;
+let pipeInterval = 1900;
+let gameOver = true;
+let paused = true;
+
+let particles = [];
+
+// Create pipe
+function createPipe(){
+  let minTop = 80;
+  let maxTop = canvasHeight - pipeGap - 80;
+  let top = Math.random() * (maxTop - minTop) + minTop;
+  return {
+    x: canvasWidth,
+    top: top,
+    bottom: canvasHeight - top - pipeGap,
+    passed: false
+  };
+}
+
+// Flap
+function flap(){
+  if(!gameOver && !paused){
+    ball.vel = ball.lift;
+    spawnParticles();
+  }
+}
+
+// Particle effects
+function spawnParticles(){
+  for(let i = 0; i < 6; i++){
+    particles.push({
+      x: ball.x + 20,
+      y: ball.y + 20,
+      vx: (Math.random() - 0.5) * 3,
+      vy: (Math.random() - 0.5) * 3,
+      alpha: 1
+    });
+  }
+}
+
+function updateParticles(){
+  particles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.alpha -= 0.025;
+  });
+  particles = particles.filter(p => p.alpha > 0);
+}
+
+function drawParticles(){
+  particles.forEach(p => {
+    ctx.fillStyle = `rgba(255,51,153,${p.alpha})`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+// Input handlers
+function startOrFlap(){
+  if(gameOver || paused){
+    startGame();
+    setTimeout(() => flap(), 100);
+  } else {
+    flap();
+  }
+}
+
+// Touch (mobile)
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  startOrFlap();
+}, {passive: false});
+
+// Mouse (desktop)
+canvas.addEventListener('mousedown', e => {
+  e.preventDefault();
+  startOrFlap();
+});
+
+// Keyboard (desktop)
+document.addEventListener('keydown', e => {
+  if(e.code === 'Space'){
+    e.preventDefault();
+    startOrFlap();
+  }
+});
+
+// Leaderboard button
+document.getElementById('leaderboardBtn').addEventListener('click', () => {
+  showLeaderboard();
+});
+
+document.getElementById('closeLeaderboard').addEventListener('click', () => {
+  document.getElementById('leaderboardModal').style.display = 'none';
+});
+
+// Name input handlers
+document.getElementById('submitName').addEventListener('click', () => {
+  submitPlayerName();
+});
+
+document.getElementById('playerNameInput').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter'){
+    submitPlayerName();
+  }
+});
+
+function showLeaderboard(){
+  const modal = document.getElementById('leaderboardModal');
+  const list = document.getElementById('leaderboardList');
+  
+  list.innerHTML = '';
+  
+  if(leaderboard.length === 0){
+    list.innerHTML = '<p style="text-align:center;color:#ff3399;padding:20px;">No scores yet. Be the first!</p>';
+  } else {
+    leaderboard.forEach((entry, index) => {
+      const div = document.createElement('div');
+      div.className = 'leaderboard-entry';
+      
+      let medal = '';
+      if(index === 0) medal = '🥇';
+      else if(index === 1) medal = '🥈';
+      else if(index === 2) medal = '🥉';
+      else medal = `${index + 1}.`;
+      
+      div.innerHTML = `
+        <span class="leaderboard-rank">${medal}</span>
+        <span class="leaderboard-name">${entry.name}</span>
+        <span class="leaderboard-score">${entry.score}</span>
+      `;
+      
+      list.appendChild(div);
+    });
+  }
+  
+  modal.style.display = 'flex';
+}
+
+function showNameInput(score){
+  pendingScore = score;
+  document.getElementById('finalScore').textContent = score;
+  document.getElementById('playerNameInput').value = '';
+  document.getElementById('nameInputModal').style.display = 'flex';
+  document.getElementById('playerNameInput').focus();
+}
+
+function submitPlayerName(){
+  const nameInput = document.getElementById('playerNameInput');
+  let playerName = nameInput.value.trim();
+  
+  if(!playerName){
+    playerName = 'Anonymous';
+  }
+  
+  // Save the player name for future games
+  registeredPlayerName = playerName;
+  try {
+    localStorage.setItem('flappyHeartPlayerName', playerName);
+  } catch(e) {}
+  
+  if(pendingScore !== null){
+    leaderboard.push({name: playerName, score: pendingScore});
+    leaderboard.sort((a, b) => b.score - a.score);
+    leaderboard = leaderboard.slice(0, 10); // Keep top 10
+    
+    try {
+      localStorage.setItem('flappyHeartLeaderboard', JSON.stringify(leaderboard));
+    } catch(e) {}
+    
+    pendingScore = null;
+  }
+  
+  document.getElementById('nameInputModal').style.display = 'none';
+  showLeaderboard();
+}
+
+// Start game
+function startGame(){
+  resetGame();
+  paused = false;
+  lastPipeTime = performance.now();
+  requestAnimationFrame(gameLoop);
+}
+
+// Reset game
+function resetGame(){
+  ball.y = canvasHeight / 2;
+  ball.vel = 0;
+  pipes = [];
+  particles = [];
+  score = 0;
+  gameOver = false;
+  document.getElementById('score').textContent = `Score: 0 | Best: ${bestScore}`;
+}
+
+// Save score
+function saveScore(){
+  // Show name input if score is good enough for leaderboard
+  const isTopScore = leaderboard.length < 10 || score > leaderboard[leaderboard.length - 1].score;
+  
+  if(score > 0 && isTopScore){
+    // If player already registered, auto-save with their name
+    if(registeredPlayerName){
+      leaderboard.push({name: registeredPlayerName, score: score});
+      leaderboard.sort((a, b) => b.score - a.score);
+      leaderboard = leaderboard.slice(0, 10);
+      
+      try {
+        localStorage.setItem('flappyHeartLeaderboard', JSON.stringify(leaderboard));
+      } catch(e) {}
+      
+      // Show leaderboard after a moment
+      setTimeout(() => {
+        showLeaderboard();
+      }, 1000);
+    } else {
+      // New player - ask for name
+      setTimeout(() => {
+        showNameInput(score);
+      }, 500);
+    }
+  }
+}
+
+// End game
+function endGame(){
+  if(gameOver) return; // Prevent multiple calls
+  
+  gameOver = true;
+  
+  if(score > bestScore){
+    bestScore = score;
+    try {
+      localStorage.setItem('flappyHeartBest', bestScore);
+    } catch(e) {}
+  }
+  
+  document.getElementById('score').textContent = `Score: ${score} | Best: ${bestScore}`;
+  
+  // Draw the game over screen immediately
+  setTimeout(() => {
+    drawBackground();
+    drawPipes();
+    drawBall();
+    drawGameOver();
+    paused = true;
+    
+    // Check if score qualifies for leaderboard
+    saveScore();
+  }, 50);
+}
+
+// Draw background
+function drawBackground(){
+  ctx.fillStyle = '#ffe6f1';
+  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  
+  // Floating hearts
+  let time = performance.now() * 0.0003;
+  for(let i = 0; i < 3; i++){
+    let x = ((time * 40 + i * 150) % (canvasWidth + 60)) - 30;
+    let y = 80 + i * 150 + Math.sin(time * 2 + i) * 20;
+    drawHeart(x, y, 12, 'rgba(255,153,204,0.3)');
+  }
+}
+
+// Draw heart shape
+function drawHeart(x, y, size, color = '#ff3399'){
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.bezierCurveTo(x, y - size/2, x - size, y - size/2, x - size, y);
+  ctx.bezierCurveTo(x - size, y + size/2, x, y + size/1.5, x, y + size);
+  ctx.bezierCurveTo(x, y + size/1.5, x + size, y + size/2, x + size, y);
+  ctx.bezierCurveTo(x + size, y - size/2, x, y - size/2, x, y);
+  ctx.fill();
+  
+  // Add shine
+  if(color === '#ff3399'){
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.beginPath();
+    ctx.arc(x - size/3, y - size/4, size/4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// Draw ball (heart)
+function drawBall(){
+  drawHeart(ball.x + 20, ball.y + 20, 20);
+}
+
+// Draw pipes
+function drawPipes(){
+  pipes.forEach(p => {
+    // Gradient for pipes
+    let gradient = ctx.createLinearGradient(p.x, 0, p.x + pipeWidth, 0);
+    gradient.addColorStop(0, '#ff66aa');
+    gradient.addColorStop(0.5, '#ff99cc');
+    gradient.addColorStop(1, '#ff66aa');
+    ctx.fillStyle = gradient;
+    
+    // Top pipe
+    ctx.fillRect(p.x, 0, pipeWidth, p.top);
+    
+    // Bottom pipe
+    ctx.fillRect(p.x, canvasHeight - p.bottom, pipeWidth, p.bottom);
+    
+    // Pipe caps
+    ctx.fillStyle = '#ff3399';
+    ctx.fillRect(p.x - 5, p.top - 25, pipeWidth + 10, 25);
+    ctx.fillRect(p.x - 5, canvasHeight - p.bottom, pipeWidth + 10, 25);
+  });
+}
+
+// Update ball
+function updateBall(){
+  ball.vel += ball.gravity;
+  if(ball.vel > 8) ball.vel = 8;
+  ball.y += ball.vel;
+  
+  // Ground collision
+  if(ball.y + ball.h >= canvasHeight){
+    endGame();
+  }
+  
+  // Ceiling
+  if(ball.y <= 0){
+    ball.y = 0;
+  }
+}
+
+// Update pipes
+function updatePipes(){
+  pipes.forEach(p => {
+    p.x -= speed;
+    
+    // Score
+    if(!p.passed && p.x + pipeWidth < ball.x){
+      p.passed = true;
+      score++;
+      
+      if(score > bestScore){
+        bestScore = score;
+        try {
+          localStorage.setItem('flappyHeartBest', bestScore);
+        } catch(e) {}
+      }
+      
+      document.getElementById('score').textContent = `Score: ${score} | Best: ${bestScore}`;
+    }
+  });
+  
+  // Remove off-screen pipes
+  pipes = pipes.filter(p => p.x + pipeWidth > 0);
+  
+  // Add new pipes
+  if(performance.now() - lastPipeTime > pipeInterval){
+    pipes.push(createPipe());
+    lastPipeTime = performance.now();
+  }
+}
+
+// Check collision
+function checkCollision(){
+  for(let p of pipes){
+    if(ball.x + ball.w > p.x && ball.x < p.x + pipeWidth){
+      if(ball.y < p.top || ball.y + ball.h > canvasHeight - p.bottom){
+        endGame();
+      }
+    }
+  }
+}
+
+// Draw start screen
+function drawStartScreen(){
+  drawBackground();
+  
+  ctx.fillStyle = '#ff3399';
+  ctx.font = 'bold 36px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Flappy Heart', canvasWidth/2, canvasHeight/2 - 80);
+  
+  drawHeart(canvasWidth/2, canvasHeight/2 - 20, 25);
+  
+  ctx.font = 'bold 24px sans-serif';
+  ctx.fillText('Tap to Start', canvasWidth/2, canvasHeight/2 + 40);
+  
+  ctx.font = '18px sans-serif';
+  ctx.fillText(`Your Best: ${bestScore}`, canvasWidth/2, canvasHeight/2 + 80);
+  
+  // Show top 3 from leaderboard
+  if(leaderboard.length > 0){
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillText('Top Players:', canvasWidth/2, canvasHeight/2 + 120);
+    
+    ctx.font = '14px sans-serif';
+    leaderboard.slice(0, 3).forEach((entry, i) => {
+      const medal = ['🥇', '🥈', '🥉'][i];
+      ctx.fillText(`${medal} ${entry.name}: ${entry.score}`, canvasWidth/2, canvasHeight/2 + 145 + i * 22);
+    });
+  }
+}
+
+// Draw game over
+function drawGameOver(){
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 42px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Game Over', canvasWidth/2, canvasHeight/2 - 40);
+  
+  ctx.fillStyle = '#ff99cc';
+  ctx.font = 'bold 28px sans-serif';
+  ctx.fillText(`Score: ${score}`, canvasWidth/2, canvasHeight/2 + 10);
+  
+  if(score === bestScore && score > 0){
+    ctx.fillStyle = '#FFD700';
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillText('💗 NEW RECORD! 💗', canvasWidth/2, canvasHeight/2 + 45);
+  }
+  
+  ctx.fillStyle = '#fff';
+  ctx.font = '20px sans-serif';
+  ctx.fillText('Tap to Restart', canvasWidth/2, canvasHeight/2 + 80);
+}
+
+// Main game loop
+function gameLoop(){
+  if(paused && !gameOver) return;
+  
+  drawBackground();
+  drawPipes();
+  drawBall();
+  drawParticles();
+  
+  if(!gameOver){
+    updateBall();
+    updatePipes();
+    updateParticles();
+    checkCollision();
+    requestAnimationFrame(gameLoop);
+  } else {
+    drawGameOver();
+  }
+}
+
+// Prevent mobile scrolling
+document.body.addEventListener('touchmove', e => {
+  e.preventDefault();
+}, {passive: false});
+
+// Initial screen
+drawStartScreen();
+</script>
+
+</body>
+</html>
