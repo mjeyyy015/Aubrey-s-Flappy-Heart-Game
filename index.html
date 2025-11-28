@@ -272,15 +272,6 @@ canvas{
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-function resizeCanvas() {
-    canvas.width = window.innerWidth * devicePixelRatio;
-    canvas.height = window.innerHeight * devicePixelRatio;
-    ctx.scale(devicePixelRatio, devicePixelRatio);
-}
-
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
-
 
 // Sound effects
 const popSound = new Audio('pop.mp3');
@@ -902,6 +893,7 @@ drawStartScreen();
 
 </body>
 </html>
+
 
 
 
