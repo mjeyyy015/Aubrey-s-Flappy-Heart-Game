@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>Flappy Heart</title>
+<title>Aubrey's Flappy Heart Game</title>
 <style>
 *{
   margin:0;
@@ -262,45 +262,6 @@ canvas{
     <button id="submitName">Save Score</button>
   </div>
 </div>
-
-<!-- Firebase v9 (Modular CDN scripts) -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-
-<script>
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyCiy0j2ik3DPAraq-8WzU-VUEL_awHBEWw",
-    authDomain: "aubrey-s-flappy-heart-game.firebaseapp.com",
-    projectId: "aubrey-s-flappy-heart-game",
-    storageBucket: "aubrey-s-flappy-heart-game.appspot.com",
-    messagingSenderId: "652403411460",
-    appId: "1:652403411460:web:ccf8d06ca6273e19ff0351",
-    measurementId: "G-OTELV3X4YS"
-  };
-
-  // Initialize Firebase
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  function uploadScoreToFirebase(playerName, score) {
-  db.collection("scores").add({
-    name: playerName,
-    score: score,
-    date: new Date()
-  })
-  .then(() => {
-    console.log("Score uploaded successfully!");
-  })
-  .catch(error => {
-    console.error("Error uploading score:", error);
-  });
-}
-
-</script>
-
-
-
 
 <script>
 const canvas = document.getElementById('gameCanvas');
@@ -645,28 +606,6 @@ function resetGame(){
 function saveScore(){
   // Show name input if score is good enough for leaderboard
   const isTopScore = leaderboard.length < 10 || score > leaderboard[leaderboard.length - 1].score;
-
-  // Ask player to enter name
-const playerName = prompt("Game Over! Enter your name:") || "Anonymous";
-
-function loadHighScores() {
-  db.collection("scores")
-    .orderBy("score", "desc")
-    .limit(5)
-    .get()
-    .then(querySnapshot => {
-      let scoreList = "🏆 Top 5 High Scores:\n\n";
-      querySnapshot.forEach(doc => {
-        const data = doc.data();
-        scoreList += `${data.name}: ${data.score}\n`;
-      });
-      alert(scoreList);
-    });
-}
-
-// Upload score
-uploadScoreToFirebase(playerName, score);
-
   
   if(score > 0 && isTopScore){
     // If player already registered, auto-save with their name
