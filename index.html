@@ -8,6 +8,20 @@
 <title>Aubrey's Flappy Heart Game</title>
 <style>
   
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100%;
+}
+
+canvas {
+    width: 100vw;
+    height: 100vh;
+    display: block;
+    touch-action: none;
+}
+
 canvas {
     will-change: transform;
 }
@@ -244,7 +258,7 @@ canvas{
 
 <div id="gameContainer">
   <div id="canvasWrapper">
-    <canvas id="gameCanvas"></canvas>
+   <canvas id="gameCanvas" width="400" height="600"></canvas>
   </div>
   <div id="score">Score: 0 | Best: 0</div>
   <button id="leaderboardBtn">🏆 Leaderboard</button>
@@ -269,8 +283,18 @@ canvas{
 </div>
 
 <script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth * devicePixelRatio;
+    canvas.height = window.innerHeight * devicePixelRatio;
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+}
+
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
 
 // Sound effects
 const popSound = new Audio('pop.mp3');
@@ -892,4 +916,5 @@ drawStartScreen();
 
 </body>
 </html>
+
 
