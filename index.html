@@ -267,6 +267,34 @@ canvas{
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+
+let time = performance.now() * 0.0003;
+
+// Draw background
+function drawBackground(){
+  ctx.fillStyle = '#ffe6f1';
+  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+  // Speed multiplier for mobile devices
+  const speedBoost = window.innerWidth < 600 ? 2.2 : 1.0;
+
+  let time = performance.now() * 0.0003 * speedBoost;
+
+  for(let i = 0; i < 3; i++){
+    let x = ((time * 40 + i * 150) % (canvasWidth + 60)) - 30;
+    let y = 80 + i * 150 + Math.sin(time * 2 + i) * 20;
+    drawHeart(x, y, 12, 'rgba(255,153,204,0.3)');
+  }
+}
+
+// Speed adjustment for mobile
+if (window.innerWidth < 600) {
+  speed = 3.5;        // was 2.2 - faster for mobile
+  pipeInterval = 1400; // spawn pipes more often
+  pipeGap = 180;       // slightly tighter gap for difficulty balance
+}
+
+
 // Sound effects
 const popSound = new Audio('pop.mp3');
 popSound.volume = 0.2;
